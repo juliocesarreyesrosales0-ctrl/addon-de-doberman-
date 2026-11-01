@@ -1,0 +1,15 @@
+.gradle/
+.kotlin/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+# Claves de firma privadas: nunca subirlas al repositorio
+*.jks
+*.keystore
+keystore.properties

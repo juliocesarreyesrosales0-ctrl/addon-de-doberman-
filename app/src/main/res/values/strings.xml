@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Doberman Antivirus</string>
+    <string name="guard_service_label">Doberman: escudo contra notificaciones falsas</string>
+</resources>
