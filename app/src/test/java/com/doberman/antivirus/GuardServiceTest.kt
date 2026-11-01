@@ -91,6 +91,17 @@ class GuardServiceTest {
     }
 
     @Test
+    fun scamFromUnknownPageIsBlamedOnThePageNotTheBrowser() {
+        post("org.mozilla.firefox", "x", "¡Tu teléfono tiene 3 virus!", "Toca aquí para limpiarlo ahora")
+        val src = SpamRepository.sources.value.single { it.packageName == "org.mozilla.firefox" }
+        assertTrue(src.isWeb)
+        assertTrue(src.isScam)
+        assertNull(src.host)
+        assertTrue(src.displayName.contains("Firefox"))
+        assertFalse(SpamRepository.scamAppPackages(context).contains("org.mozilla.firefox"))
+    }
+
+    @Test
     fun browserDownloadNotificationsAreIgnored() {
         post("com.android.chrome", "downloads", "Descarga completa", "documento.pdf")
         assertTrue(SpamRepository.sources.value.isEmpty())

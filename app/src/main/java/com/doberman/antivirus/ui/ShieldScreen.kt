@@ -241,10 +241,13 @@ private fun SourceCard(s: SpamSource, vm: MainViewModel) {
         }
         if (s.isWeb) {
             Muted(
-                if (s.channelId?.startsWith("web:") == true) {
-                    "Se abrirá el ajuste de notificaciones de esta página: apaga el interruptor."
-                } else {
-                    "Se abrirán las notificaciones de ${s.appLabel}: busca «${s.displayName}» y desactívala, o sigue la guía de abajo."
+                when {
+                    s.channelId?.startsWith("web:") == true ->
+                        "Se abrirá el ajuste de notificaciones de esta página: apaga el interruptor."
+                    s.host == null ->
+                        "${s.appLabel} no dice qué página fue. Se abrirán sus notificaciones; usa también la guía de abajo para quitar el permiso a las páginas que no conozcas."
+                    else ->
+                        "Se abrirán las notificaciones de ${s.appLabel}: busca «${s.host}» y desactívala, o sigue la guía de abajo."
                 },
             )
         }

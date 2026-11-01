@@ -1,6 +1,7 @@
 package com.doberman.antivirus.guard
 
 import android.content.Context
+import com.doberman.antivirus.core.Known
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +29,8 @@ data class SpamSource(
     val userBlockedAt: Long,
 ) {
     val isScam: Boolean get() = scamCount > 0
-    val displayName: String get() = host ?: appLabel
+    val displayName: String
+        get() = host ?: if (isWeb) "Página web desconocida (vía $appLabel)" else appLabel
     val markedBlocked: Boolean get() = userBlockedAt > lastSeen
 }
 
@@ -66,7 +68,7 @@ object SpamRepository {
     ) {
         synchronized(lock) {
             init(context)
-            val key = if (isWeb && host != null) "web:$host|$packageName" else "app:$packageName"
+            val key = if (isWeb) "web:${host ?: "?"}|$packageName" else "app:$packageName"
             val now = System.currentTimeMillis()
             val list = _sources.value.toMutableList()
             val idx = list.indexOfFirst { it.key == key }
@@ -74,7 +76,7 @@ object SpamRepository {
             val keepPrevSample = prev != null && prev.isScam && !isScam
             val updated = SpamSource(
                 key = key,
-                isWeb = isWeb && host != null,
+                isWeb = isWeb,
                 host = if (isWeb) host else null,
                 packageName = packageName,
                 appLabel = appLabel,
@@ -103,10 +105,13 @@ object SpamRepository {
 
     fun clear(context: Context) = mutate(context) { emptyList() }
 
-    /** Apps (no navegadores) que enviaron notificaciones engañosas. */
+    /** Apps (no navegadores: en ellos la culpa es de la página web) que enviaron notificaciones engañosas. */
     fun scamAppPackages(context: Context): Set<String> {
         init(context)
-        return _sources.value.filter { !it.isWeb && it.isScam }.map { it.packageName }.toSet()
+        return _sources.value
+            .filter { !it.isWeb && it.isScam && it.packageName !in Known.BROWSERS }
+            .map { it.packageName }
+            .toSet()
     }
 
     private fun mutate(context: Context, block: (List<SpamSource>) -> List<SpamSource>) {
