@@ -13,3 +13,5 @@ captures/
 *.jks
 *.keystore
 keystore.properties
+# APK copiado para compartir
+dist/
